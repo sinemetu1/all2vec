@@ -206,7 +206,7 @@ class EntitySet(object):
                 )
         return unpickled_class 
     @classmethod
-    def load_hdfs(cls, folder, sc):
+    def load_hdfs(cls, folder, sc, SparkFiles):
         """Load object, requires sparkContext (sc) and SparkFiles (imported from pyspark)."""
         filepath = os.path.join(folder, 'entity_info.json')
         sc.addFile(filepath)
