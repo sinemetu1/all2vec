@@ -11,8 +11,7 @@ setup(
     zip_safe=True,
     install_requires=[
         'annoy',
-        'dill',
-        'numpy',
+        'dill'
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
