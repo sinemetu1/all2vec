@@ -213,12 +213,12 @@ class EntitySet(object):
         with open(SparkFiles.get("entity_info.json")) as f:
             enttype_info = json.load(f)
         pickle_filepath = os.path.join(folder, 'object.pickle')
-        sc.addFile(pickle_filepath)
+        sc.addPyFile(pickle_filepath)
         with open(SparkFiles.get("object.pickle")) as f:
             unpickled_class = dill.load(f)
         for k in unpickled_class._annoy_objects:
             annoy_filepath = os.path.join(folder, '{}.ann'.format(k))
-            sc.addFile(annoy_filepath)
+            sc.addPyFile(annoy_filepath)
             unpickled_class._annoy_objects[k]._ann_obj = AnnoyIndex(
                 unpickled_class._nfactor,
                 unpickled_class._annoy_objects[k]._metric)
