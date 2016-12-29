@@ -209,7 +209,7 @@ class EntitySet(object):
     def load_hdfs(cls, folder, sc, SparkFiles):
         """Load object, requires sparkContext (sc) and SparkFiles (imported from pyspark)."""
         filepath = os.path.join(folder, 'entity_info.json')
-        sc.addFile(filepath)
+        sc.addPyFile(filepath)
         with open(SparkFiles.get("entity_info.json")) as f:
             enttype_info = json.load(f)
         pickle_filepath = os.path.join(folder, 'object.pickle')
