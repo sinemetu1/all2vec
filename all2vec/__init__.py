@@ -207,18 +207,16 @@ class EntitySet(object):
         return unpickled_class 
     @classmethod
     def load_hdfs(cls, folder, SparkFiles):
-        """Load object, requires SparkFiles (imported from pyspark)."""
+        """Load object, requires SparkFiles (imported from pyspark), 
+        must have sc.addPyFile(path + file) prior to SparkFiles.get(file)."""
         filepath = os.path.join(folder, 'entity_info.json')
-        #sc.addPyFile(filepath)
         with open(SparkFiles.get("entity_info.json")) as f:
             enttype_info = json.load(f)
         pickle_filepath = os.path.join(folder, 'object.pickle')
-        #sc.addPyFile(pickle_filepath)
         with open(SparkFiles.get("object.pickle")) as f:
             unpickled_class = dill.load(f)
         for k in unpickled_class._annoy_objects:
             annoy_filepath = os.path.join(folder, '{}.ann'.format(k))
-            #sc.addPyFile(annoy_filepath)
             unpickled_class._annoy_objects[k]._ann_obj = AnnoyIndex(
                 unpickled_class._nfactor,
                 unpickled_class._annoy_objects[k]._metric)
@@ -246,7 +244,10 @@ class EntitySet(object):
                     'but was not loaded'.format(enttype['entity_type']))
         return unpickled_class
     @classmethod
-    def load_hdfs_subset(nfactor, uss_dir, ann_map, SparkFiles):
+    def load_hdfs_subset(nfactor, ann_map, SparkFiles):
+        """Load subset of ann objects, requires SparkFiles (imported from pyspark), 
+        must have sc.addPyFile(path + file) prior to SparkFiles.get(file).
+        ann_map type dict format {int:str}"""
         with open(SparkFiles.get("object.pickle")) as f:
             pkl = dill.load(f)
         t = EntitySet(nfactor)
