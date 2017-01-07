@@ -245,3 +245,17 @@ class EntitySet(object):
                     'Entity type {0} exists in model_info.json '
                     'but was not loaded'.format(enttype['entity_type']))
         return unpickled_class
+    @classmethod
+    def load_hdfs_subset(nfactor, uss_dir, ann_map, SparkFiles):
+        with open(SparkFiles.get("object.pickle")) as f:
+            pkl = dill.load(f)
+        t = EntitySet(nfactor)
+        for ann_idx, ann_item in ann_map.items():
+            ent_type = EntityType(nfactor, 50, "angular", ann_idx, ann_item)
+            ent_type.__dict__ = pkl._annoy_objects[ann_item].__dict__
+            ent_type._ann_obj = AnnoyIndex(100)
+            ent_type._ann_obj.load(SparkFiles.get(ann_item + ".ann"))
+            t._annoy_objects[ann_item] = ent_type
+            t._entity_id_map[ann_idx] = ann_item
+        t._is_built=True
+        return t
