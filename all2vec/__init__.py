@@ -244,7 +244,7 @@ class EntitySet(object):
                     'but was not loaded'.format(enttype['entity_type']))
         return unpickled_class
     @classmethod
-    def load_hdfs_subset(nfactor, ann_map, SparkFiles):
+    def load_hdfs_subset(cls, nfactor, ann_map, SparkFiles):
         """Load subset of ann objects, requires SparkFiles (imported from pyspark), 
         must have sc.addPyFile(path + file) prior to SparkFiles.get(file).
         ann_map type dict format {int:str}"""
