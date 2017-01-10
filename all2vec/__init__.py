@@ -206,17 +206,14 @@ class EntitySet(object):
                 )
         return unpickled_class 
     @classmethod
-    def load_hdfs(cls, folder, SparkFiles):
+    def load_hdfs(cls, SparkFiles):
         """Load object, requires SparkFiles (imported from pyspark), 
         must have sc.addPyFile(path + file) prior to SparkFiles.get(file)."""
-        filepath = os.path.join(folder, 'entity_info.json')
         with open(SparkFiles.get("entity_info.json")) as f:
             enttype_info = json.load(f)
-        pickle_filepath = os.path.join(folder, 'object.pickle')
         with open(SparkFiles.get("object.pickle")) as f:
             unpickled_class = dill.load(f)
         for k in unpickled_class._annoy_objects:
-            annoy_filepath = os.path.join(folder, '{}.ann'.format(k))
             unpickled_class._annoy_objects[k]._ann_obj = AnnoyIndex(
                 unpickled_class._nfactor,
                 unpickled_class._annoy_objects[k]._metric)
@@ -244,18 +241,18 @@ class EntitySet(object):
                     'but was not loaded'.format(enttype['entity_type']))
         return unpickled_class
     @classmethod
-    def load_hdfs_subset(cls, nfactor, ann_map, SparkFiles):
+    def load_hdfs_subset(cls, nfactor, entities, SparkFiles):
         """Load subset of ann objects, requires SparkFiles (imported from pyspark), 
         must have sc.addPyFile(path + file) prior to SparkFiles.get(file).
-        ann_map type dict format {int:str}"""
+        entities is a list of annoy indexes to load"""
         with open(SparkFiles.get("object.pickle")) as f:
             pkl = dill.load(f)
         t = EntitySet(nfactor)
-        for ann_idx, ann_item in ann_map.items():
+        for ann_idx, ann_item in enumerate(entities):
             ent_type = EntityType(nfactor, 50, "angular", ann_idx, ann_item)
             ent_type.__dict__ = pkl._annoy_objects[ann_item].__dict__
-            ent_type._ann_obj = AnnoyIndex(100)
-            ent_type._ann_obj.load(SparkFiles.get(ann_item + ".ann"))
+            ent_type._ann_obj = AnnoyIndex(nfactor)
+            ent_type._ann_obj.load(SparkFiles.get("{}.ann".format(ann_item)))
             t._annoy_objects[ann_item] = ent_type
             t._entity_id_map[ann_idx] = ann_item
         t._is_built=True
