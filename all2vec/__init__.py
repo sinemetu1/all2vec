@@ -274,12 +274,12 @@ class EntitySet(object):
     @classmethod
     def load_remote(cls, sparkfiles):
         """Load object from hdfs or s3, requires SparkFiles (imported from pyspark).
-        
+
         Must have sc.addPyFile(path + file) prior to SparkFiles.get(file).
         """
         with open(sparkfiles.get("entity_info.json")) as f:
             enttype_info = json.load(f)
-            
+
         with open(sparkfiles.get("object.pickle")) as f:
             unpickled_class = dill.load(f)
 
@@ -288,14 +288,18 @@ class EntitySet(object):
                 unpickled_class._nfactor,
                 unpickled_class._annoy_objects[k]._metric)
             try:
-                unpickled_class._annoy_objects[k]._ann_obj.load(SparkFiles.get("{}.ann".format(k)))
+                unpickled_class._annoy_objects[k]._ann_obj.load(
+                    sparkfiles.get("{}.ann".format(k))
+                )
+
             except IOError as e:
                 raise IOError(
                     "Error: cannot load file {0}, which was built "
-                    "with the model. '{1}'".format(annoy_filepath, e)
+                    "with the model. '{1}'".format("{}".format(k), e)
                 )
 
         enttype_sizes = {}
+
         for enttype in enttype_info:
             enttype_sizes[enttype['entity_type']]= enttype['num_entities']
 
@@ -331,11 +335,14 @@ class EntitySet(object):
         t = EntitySet(nfactor)
 
         for ann_idx, ann_item in enumerate(entities):
-            #These EntityType params get overwritten so they don't matter
+            
+            #These EntityType params get overwritten
             ent_type = EntityType(nfactor, 50, "angular", ann_idx, ann_item)
             ent_type.__dict__ = pkl._annoy_objects[ann_item].__dict__
+
             #Overwrite pickled annoy index with empty index
             ent_type._ann_obj = AnnoyIndex(nfactor)
+
             #And load
             ent_type._ann_obj.load(sparkfiles.get("{}.ann".format(ann_item)))
             t._annoy_objects[ann_item] = ent_type
