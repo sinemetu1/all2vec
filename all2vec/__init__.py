@@ -301,7 +301,7 @@ class EntitySet(object):
         enttype_sizes = {}
 
         for enttype in enttype_info:
-            enttype_sizes[enttype['entity_type']]= enttype['num_entities']
+            enttype_sizes[enttype['entity_type']] = enttype['num_entities']
 
         for k, annoy_object in unpickled_class._annoy_objects.items():
             if enttype_sizes[annoy_object._entity_type] != annoy_object._nitems:  # NOQA
@@ -324,8 +324,8 @@ class EntitySet(object):
     @classmethod
     def load_remote_subset(cls, nfactor, entities, sparkfiles):
         """Load subset of ann objects from hdfs or s3.
-        
-        Requires SparkFiles (imported from pyspark), 
+
+        Requires SparkFiles (imported from pyspark),
         must have sc.addPyFile(path + file) prior to SparkFiles.get(file).
         entities is a list of annoy indexes to load.
         """
@@ -335,15 +335,9 @@ class EntitySet(object):
         t = EntitySet(nfactor)
 
         for ann_idx, ann_item in enumerate(entities):
-            
-            #These EntityType params get overwritten
             ent_type = EntityType(nfactor, 50, "angular", ann_idx, ann_item)
             ent_type.__dict__ = pkl._annoy_objects[ann_item].__dict__
-
-            #Overwrite pickled annoy index with empty index
             ent_type._ann_obj = AnnoyIndex(nfactor)
-
-            #And load
             ent_type._ann_obj.load(sparkfiles.get("{}.ann".format(ann_item)))
             t._annoy_objects[ann_item] = ent_type
             t._entity_id_map[ann_idx] = ann_item
