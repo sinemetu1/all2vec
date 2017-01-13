@@ -270,18 +270,19 @@ class EntitySet(object):
                     'but was not loaded'.format(enttype['entity_type'])
                 )
         return unpickled_class
-    
+
     @classmethod
-    def load_remote(cls, SparkFiles):
-        """Load object from hdfs or s3, requires SparkFiles (imported from pyspark), 
-        must have sc.addPyFile(path + file) prior to SparkFiles.get(file)."""
+    def load_remote(cls, sparkfiles):
+        """Load object from hdfs or s3, requires SparkFiles (imported from pyspark).
         
-        with open(SparkFiles.get("entity_info.json")) as f:
+        Must have sc.addPyFile(path + file) prior to SparkFiles.get(file).
+        """
+        with open(sparkfiles.get("entity_info.json")) as f:
             enttype_info = json.load(f)
             
-        with open(SparkFiles.get("object.pickle")) as f:
+        with open(sparkfiles.get("object.pickle")) as f:
             unpickled_class = dill.load(f)
-            
+
         for k in unpickled_class._annoy_objects:
             unpickled_class._annoy_objects[k]._ann_obj = AnnoyIndex(
                 unpickled_class._nfactor,
@@ -293,11 +294,11 @@ class EntitySet(object):
                     "Error: cannot load file {0}, which was built "
                     "with the model. '{1}'".format(annoy_filepath, e)
                 )
-                
+
         enttype_sizes = {}
         for enttype in enttype_info:
             enttype_sizes[enttype['entity_type']]= enttype['num_entities']
-        
+
         for k, annoy_object in unpickled_class._annoy_objects.items():
             if enttype_sizes[annoy_object._entity_type] != annoy_object._nitems:  # NOQA
                 raise ValueError(
@@ -307,7 +308,7 @@ class EntitySet(object):
                         annoy_object._nitems,
                         enttype_sizes[annoy_object._entity_type])
                 )
-        
+
         for enttype in enttype_info:
             if enttype['entity_type'] not in unpickled_class._annoy_objects:
                 raise ValueError(
@@ -315,18 +316,20 @@ class EntitySet(object):
                     'but was not loaded'.format(enttype['entity_type'])
                 )
         return unpickled_class
-    
+
     @classmethod
-    def load_remote_subset(cls, nfactor, entities, SparkFiles):
-        """Load subset of ann objects from hdfs or s3, 
-        requires SparkFiles (imported from pyspark), 
-        must have sc.addPyFile(path + file) prior to SparkFiles.get(file).
-        entities is a list of annoy indexes to load"""
-        with open(SparkFiles.get("object.pickle")) as f:
-            pkl = dill.load(f)
-            
-        t = EntitySet(nfactor)
+    def load_remote_subset(cls, nfactor, entities, sparkfiles):
+        """Load subset of ann objects from hdfs or s3.
         
+        Requires SparkFiles (imported from pyspark), 
+        must have sc.addPyFile(path + file) prior to SparkFiles.get(file).
+        entities is a list of annoy indexes to load.
+        """
+        with open(sparkfiles.get("object.pickle")) as f:
+            pkl = dill.load(f)
+
+        t = EntitySet(nfactor)
+
         for ann_idx, ann_item in enumerate(entities):
             #These EntityType params get overwritten so they don't matter
             ent_type = EntityType(nfactor, 50, "angular", ann_idx, ann_item)
@@ -334,7 +337,7 @@ class EntitySet(object):
             #Overwrite pickled annoy index with empty index
             ent_type._ann_obj = AnnoyIndex(nfactor)
             #And load
-            ent_type._ann_obj.load(SparkFiles.get("{}.ann".format(ann_item)))
+            ent_type._ann_obj.load(sparkfiles.get("{}.ann".format(ann_item)))
             t._annoy_objects[ann_item] = ent_type
             t._entity_id_map[ann_idx] = ann_item
         t._is_built=True
