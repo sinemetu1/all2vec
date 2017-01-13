@@ -271,7 +271,7 @@ class EntitySet(object):
                 )
         return unpickled_class
     
-        @classmethod
+    @classmethod
     def load_remote(cls, SparkFiles):
         """Load object from hdfs or s3, requires SparkFiles (imported from pyspark), 
         must have sc.addPyFile(path + file) prior to SparkFiles.get(file)."""
