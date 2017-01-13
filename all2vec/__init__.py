@@ -341,5 +341,5 @@ class EntitySet(object):
             ent_type._ann_obj.load(sparkfiles.get("{}.ann".format(ann_item)))
             t._annoy_objects[ann_item] = ent_type
             t._entity_id_map[ann_idx] = ann_item
-        t._is_built=True
+        t._is_built = True
         return t
