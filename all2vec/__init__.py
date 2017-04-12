@@ -230,7 +230,7 @@ class EntitySet(object):
                 entity_type, entity_id, match_type, threshold, n_try*10)
 
     def get_entity_types(self):
-        """Helper for getting entity info object."""
+        """Helper for getting entity types object."""
         return [{
             'num_entities': etype._ann_obj.get_n_items(),
             'entity_type_id': etype._entity_type_id,
