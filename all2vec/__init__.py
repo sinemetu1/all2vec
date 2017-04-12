@@ -229,6 +229,16 @@ class EntitySet(object):
             return self.get_similar_threshold(
                 entity_type, entity_id, match_type, threshold, n_try*10)
 
+    def get_entity_types(self):
+        """Helper for getting entity info object."""
+        return [{
+            'num_entities': etype._ann_obj.get_n_items(),
+            'entity_type_id': etype._entity_type_id,
+            'entity_type': etype._entity_type,
+            'metric':  etype._metric,
+            'num_trees': etype._ntrees
+        } for k, etype in self._annoy_objects.items()]
+
     def save(self, folder):
         """Save object."""
         if not os.path.exists(folder):
@@ -242,13 +252,7 @@ class EntitySet(object):
             dill.dump(self, handle)
 
         # write entity types
-        enttypes = [{
-            'num_entities': etype._ann_obj.get_n_items(),
-            'entity_type_id': etype._entity_type_id,
-            'entity_type': etype._entity_type,
-            'metric':  etype._metric,
-            'num_trees': etype._ntrees
-        } for k, etype in self._annoy_objects.items()]
+        enttypes = self.get_entity_types()
 
         info_file = os.path.join(folder, 'entity_info.json')
         with open(info_file, 'w') as handle:
