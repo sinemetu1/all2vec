@@ -237,7 +237,7 @@ class EntitySet(object):
             'entity_type': etype._entity_type,
             'metric':  etype._metric,
             'num_trees': etype._ntrees
-        } for k, etype in self._annoy_objects.items()]
+        } for etype in self._annoy_objects.values()]
 
     def save(self, folder):
         """Save object."""
