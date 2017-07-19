@@ -10,8 +10,7 @@ setup(
     packages=find_packages(exclude=['tests']),
     zip_safe=True,
     install_requires=[
-        'all2vec==0.3.0'
-        , 'annoy==1.8.3'
+        'annoy==1.8.0'
         , 'appdirs==1.4.3'
         , 'boto==2.47.0'
         , 'boto3==1.4.4'
